@@ -1,31 +1,46 @@
+
 <template>
-    <h1>Todos list</h1>
+    <h1>
+        Lista de Tarefas
+        <router-link :to="{name:'todos.create'}">+</router-link>
+    </h1>
+
+    <div v-show="loading">
+        Carregando as tarefas
+    </div>
 
     <ul>
         <li v-for="todo in todos" :key="todo.identify">
-            {{ todo.name }}
+            {{ todo.title }}
         </li>
     </ul>
 </template>
 
 <script>
+import { onMounted, ref} from 'vue'
+
+import TodoService from '@/services/todos.services'
+
 export default {
     name: 'TodosVue',
     setup() {
-        const todos = [
-            {identify: 1, name: 'tarefa 01', completed: true},
-            {identify: 2, name: 'tarefa 02', completed: false},
-            {identify: 3, name: 'tarefa 03', completed: true},
-        ]
+        const todos = ref([])
 
-        const name = ref('default value')
+        const loading = ref(false)
 
-        name.value = 'teste 2'
-        
-        return {
+        onMounted (() => { 
+            loading.value = true
+
+            TodoService.getAll()
+                    .then(response =>  todos.value = response.data.data)
+                    .catch(error => console.log(error))
+                    .finally(() => loading.value = false)
+          })
+
+          return {
+            loading,
             todos,
-            name
-        }
+          }
     }
 }
 </script>
