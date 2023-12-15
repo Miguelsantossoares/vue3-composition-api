@@ -1,12 +1,12 @@
 <template>
     <div>
-        <h1>Adicionar Nova Tarefa </h1>
+        <h1>Editar Tarefa</h1>
 
-        <form action="#" method="post" @submit.prevent="addTodo">
+        <form action="#" method="post" @submit.prevent="editTodo">
             <input type="text" name="title" placeholder="Título" v-model="todo.name">
             <input type="text" name="description" placeholder="Descrição" v-model="todo.description">
             <button type="submit" :disabled='todo.loading'>
-                <span v-if="todo.loading">Enviando...</span>
+                <span v-if="todo.loading">Aguarde...</span>
                 <span v-else>Enviar</span>
             </button>
         </form>
@@ -14,13 +14,18 @@
 </template>
 
 <script>
-import { reactive } from 'vue'
+import {onMounted, reactive } from 'vue'
 
 import TodoService from '@/services/todos.services'
 import router from '@/router'
 
 export default {
-    name: 'AddTodoVue',
+    name: 'EditTodoVue',
+    props: {
+        id: {
+            require: true
+        }
+    },
     setup(props) {
         const todo = reactive({
             name: '',
@@ -29,15 +34,27 @@ export default {
             loading: false,
         })
 
-        const addTodo = () => {
+        onMounted(async() => {
             todo.loading = true
-            TodoService.addTodo(props.id, {...todo})
+            TodoService.getTodo(props.id)
+                        .then(response => {
+                            const todoR = response.data.data
+                            todo.name = todoR.title
+                            todo.description = todoR.body
+                            todo.completed = todoR.completed == 'S'
+                        })
+                        .finally(() => todo.loading = false)
+        })
+
+        const editTodo = () => {
+            todo.loading = true
+            TodoService.editTodo(props.id, {...todo})
                         .then(() => router.push({name: 'todo.index'}))
                         .finally(() => todo.loading = false)
         }
 
         return {
-            addTodo,
+            editTodo,
             todo
         }
     }

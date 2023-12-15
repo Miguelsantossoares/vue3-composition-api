@@ -11,7 +11,7 @@
 
     <ul>
         <li v-for="todo in todos" :key="todo.identify">
-            {{ todo.title }}
+            <todo :todo="todo" @todoDeleted="removeTodoList"/>
         </li>
     </ul>
 </template>
@@ -20,6 +20,7 @@
 import { onMounted, ref} from 'vue'
 
 import TodoService from '@/services/todos.services'
+import Todo from './Todo.vue'
 
 export default {
     name: 'TodosVue',
@@ -37,10 +38,16 @@ export default {
                     .finally(() => loading.value = false)
           })
 
+          const removeTodoList = (todo) => todos.value.splice(todos.value.indexOf(todo), 1)
+
           return {
             loading,
             todos,
+            removeTodoList,
           }
+    },
+    component: {
+        Todo
     }
 }
 </script>
